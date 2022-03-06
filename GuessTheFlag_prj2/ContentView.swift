@@ -16,6 +16,16 @@ struct ContentView: View {
     
     @State private var correctAnswer = Int.random(in: 0...2)
     
+    @State private var numGamesPlayed = 0
+    @State private var numCorrect = 0
+    
+    @State private var alertString : String = ""
+    @State private var answeredCorrectly = false
+    @State private var selectedFlag : Int = 0
+    
+    private let maxNumGames = 8
+    
+    
     var body: some View {
         ZStack {
             RadialGradient(stops: [
@@ -63,7 +73,7 @@ struct ContentView: View {
                 Spacer()
                 Spacer()
                 
-                Text("Score ???")
+                Text("Score \(numCorrect)/\(numGamesPlayed)")
                     .font(.title.bold())
                     .foregroundColor(.white)
                 
@@ -71,20 +81,26 @@ struct ContentView: View {
             }.padding()
         }
         .alert(scoreTitle, isPresented: $showingScore) {
+            
             Button("Continue") {
                 askQuestion()
             }
         } message: {
-            Text("Your Score is ???")
+            Text(buildAlertString())
         }
         
     }
     
     func flagTapped(_ number : Int) {
+        numGamesPlayed = numGamesPlayed + 1
+        selectedFlag = number
         if ( number == correctAnswer) {
             scoreTitle = "Correct"
+            numCorrect += 1
+            answeredCorrectly = true
         } else {
             scoreTitle = "Incorrect"
+            answeredCorrectly = false
         }
         
         showingScore = true
@@ -93,6 +109,37 @@ struct ContentView: View {
     func askQuestion() {
         countries.shuffle()
         correctAnswer = Int.random(in: 0...2)
+        
+        if numGamesPlayed == maxNumGames {
+            numGamesPlayed = 0
+            numCorrect = 0
+        }
+    }
+    
+    func buildAlertString() -> String {
+        
+        let scoreString = "Your Score is \(numCorrect)/\(numGamesPlayed)"
+        let closingQuestion = numGamesPlayed == maxNumGames ? "Start Over?" : "Play a new set of eight??"
+        var answered = ""
+        var returnString = ""
+        if answeredCorrectly == false {
+            answered = "Sorry, you selected \(countries[selectedFlag])"
+        }
+        
+        if answeredCorrectly {
+            returnString = """
+                \(scoreString)
+                \(closingQuestion)
+            """
+        } else {
+            returnString = """
+                \(scoreString)
+                \(answered)
+                \(closingQuestion)
+            """
+        }
+        
+        return returnString
     }
 }
 
