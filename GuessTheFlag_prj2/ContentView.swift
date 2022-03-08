@@ -7,6 +7,18 @@
 
 import SwiftUI
 
+struct FlagImage : View {
+    
+    var withName : String
+    
+    var body : some View {
+        Image(withName)
+            .renderingMode(.original)
+            .clipShape((Capsule()))
+            .shadow(radius: 5)
+    }
+}
+
 struct ContentView: View {
     
     @State private var showingScore = false
@@ -24,6 +36,8 @@ struct ContentView: View {
     @State private var selectedFlag : Int = 0
     
     private let maxNumGames = 8
+    
+
     
     
     var body: some View {
@@ -57,10 +71,8 @@ struct ContentView: View {
                         Button {
                             flagTapped(number)
                         } label: {
-                            Image(countries[number])
-                                .renderingMode(.original)
-                                .clipShape((Capsule()))
-                                .shadow(radius: 5)
+                            FlagImage(withName: countries[number])
+
                         }
                     }
             
@@ -119,7 +131,7 @@ struct ContentView: View {
     func buildAlertString() -> String {
         
         let scoreString = "Your Score is \(numCorrect)/\(numGamesPlayed)"
-        let closingQuestion = numGamesPlayed == maxNumGames ? "Start Over?" : "Play a new set of eight??"
+        let closingQuestion = numGamesPlayed == maxNumGames ? "Play a new set of eight?" : "Next Question"
         var answered = ""
         var returnString = ""
         if answeredCorrectly == false {
@@ -141,6 +153,7 @@ struct ContentView: View {
         
         return returnString
     }
+    
 }
 
 struct ContentView_Previews: PreviewProvider {
