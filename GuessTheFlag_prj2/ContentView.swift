@@ -19,6 +19,22 @@ struct FlagImage : View {
     }
 }
 
+struct LargeBlueText: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .font(.largeTitle.bold())
+            .foregroundColor(.blue)
+    }
+}
+
+extension View {
+    func makeBigBlue() -> some View {
+        modifier(LargeBlueText())
+    }
+}
+
+
+
 struct ContentView: View {
     
     @State private var showingScore = false
@@ -35,13 +51,18 @@ struct ContentView: View {
     @State private var answeredCorrectly = false
     @State private var selectedFlag : Int = 0
     
-    private let maxNumGames = 8
+    @State private var rotationAmount = [0.0, 0.0, 0.0]
+    @State private var opacity = [1.0, 1.0, 1.0]
+    @State private var scale = [1.0, 1.0, 1.0]
     
-
+        
+    private let maxNumGames = 8
     
     
     var body: some View {
-        ZStack {
+
+        return ZStack {
+
             RadialGradient(stops: [
                 .init(color: Color(red: 0.1, green: 0.2, blue: 0.45), location: 0.03),
                 .init(color: Color(red: 0.76, green: 0.15, blue: 0.26), location: 0.03)
@@ -53,8 +74,7 @@ struct ContentView: View {
                 Spacer()
                 
                 Text("Guess The Flag")
-                    .foregroundColor(.white)
-                    .font(.largeTitle.bold())
+                    .makeBigBlue()
                 
                 VStack(spacing: 15) {
 
@@ -72,8 +92,13 @@ struct ContentView: View {
                             flagTapped(number)
                         } label: {
                             FlagImage(withName: countries[number])
-
+                            
                         }
+                        .rotation3DEffect(.degrees(rotationAmount[number]), axis: (x: 0, y: 1, z:0))
+                        .opacity(opacity[number])
+                        .scaleEffect(scale[number])
+                        
+
                     }
             
                 }
@@ -106,6 +131,17 @@ struct ContentView: View {
     func flagTapped(_ number : Int) {
         numGamesPlayed = numGamesPlayed + 1
         selectedFlag = number
+        
+        withAnimation {
+            rotationAmount[number] += 360.0
+            for flag in 0..<3 {
+                if flag != number {
+                    opacity[flag] = 0.25
+                    scale[flag] = 0.75
+                }
+            }
+        }
+
         if ( number == correctAnswer) {
             scoreTitle = "Correct"
             numCorrect += 1
@@ -122,10 +158,20 @@ struct ContentView: View {
         countries.shuffle()
         correctAnswer = Int.random(in: 0...2)
         
+        
         if numGamesPlayed == maxNumGames {
             numGamesPlayed = 0
             numCorrect = 0
         }
+        
+        for flag in 0..<3 {
+            rotationAmount[flag] = 0.0
+            withAnimation {
+                opacity[flag] = 1.0
+                scale[flag] = 1.0
+            }
+        }
+        
     }
     
     func buildAlertString() -> String {
